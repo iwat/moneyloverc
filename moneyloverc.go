@@ -297,6 +297,30 @@ func (t CategoryType) String() string {
 	}
 }
 
+// Campaign contains an information about an event.
+type Campaign struct {
+	ID          string    `json:"_id"`
+	Name        string    `json:"name"`
+	Icon        string    `json:"icon"`
+	Type        int       `json:"type"`
+	StartAmount int       `json:"start_amount"`
+	GoalAmount  int       `json:"goal_amount"`
+	Owner       string    `json:"owner"`
+	EndDate     time.Time `json:"end_date"`
+	LastEditBy  string    `json:"lastEditBy"`
+	TokenDevice string    `json:"tokenDevice"`
+	CurrencyID  int       `json:"currency_id"`
+	IsPublic    bool      `json:"isPublic"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	IsDelete    bool      `json:"isDelete"`
+	Status      bool      `json:"status"`
+}
+
+func (c Campaign) String() string {
+	return fmt.Sprintf("Campaign[%s %s %v]", c.ID, c.Name, c.Type)
+}
+
 // Category contains an information about transaction category.
 type Category struct {
 	ID       string       `json:"_id"`
@@ -312,16 +336,16 @@ func (c Category) String() string {
 
 // Transaction is an income or an expense entry in moneylover.
 type Transaction struct {
-	ID            string    `json:"_id"`
-	Note          string    `json:"note"`
-	Account       *Wallet   `json:"account"`
-	Category      *Category `json:"category"`
-	Amount        float64   `json:"amount"`
-	Date          time.Time `json:"displayDate"`
-	Images        []string  `json:"images"`
-	ExcludeReport bool      `json:"exclude_report"`
-	Campaigns     []string  `json:"campaign"`
-	With          []string  `json:"with"`
+	ID            string     `json:"_id"`
+	Note          string     `json:"note"`
+	Account       *Wallet    `json:"account"`
+	Category      *Category  `json:"category"`
+	Amount        float64    `json:"amount"`
+	Date          time.Time  `json:"displayDate"`
+	Images        []string   `json:"images"`
+	ExcludeReport bool       `json:"exclude_report"`
+	Campaigns     []Campaign `json:"campaign"`
+	With          []string   `json:"with"`
 }
 
 func (t Transaction) String() string {
