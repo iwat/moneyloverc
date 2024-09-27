@@ -70,6 +70,11 @@ func Login(email, password string) (*Client, error) {
 	return &Client{tokenRes.AccessToken, tokenRes.RefreshToken, headers["Client"]}, err
 }
 
+// Export returns a copy of refresh token and client ID.
+func (c *Client) Export() (string, string) {
+	return c.refreshToken, c.clientID
+}
+
 // Refresh renew the access token of the current client.
 func (c *Client) Refresh() error {
 	body := map[string]string{}

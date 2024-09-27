@@ -17,21 +17,32 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-func init() {
-	cobra.OnInitialize(initConfig)
-}
+var home string
 
-func initConfig() {
-	home, err := os.UserHomeDir()
+func init() {
+	var err error
+	home, err = os.UserHomeDir()
 	if err != nil {
 		log.Fatal("Can't find HOME dir:", err)
 	}
+	cobra.OnInitialize(initConfig)
+}
 
-	viper.AddConfigPath(home)
-	viper.SetConfigName(".config/moneylover")
+const configName = "moneylover"
+const configType = "yaml"
+
+func initConfig() {
+
+	viper.SetConfigName(configName)
+	viper.SetConfigType(configType)
+	viper.AddConfigPath(home + "/.config")
 
 	if err := viper.ReadInConfig(); err != nil {
-		log.Fatal("Can't read config:", err)
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			log.Println("Can't read config:", err)
+		} else {
+			log.Fatal("Can't read config:", err)
+		}
 	}
 }
 
@@ -40,4 +51,8 @@ func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func saveConfig() error {
+	return viper.WriteConfigAs(home + "/.config/" + configName + "." + configType)
 }
