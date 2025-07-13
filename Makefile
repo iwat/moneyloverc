@@ -1,4 +1,3 @@
-.PHONY: moneylover
-
-moneylover:
-	go build github.com/iwat/moneyloverc/cmd/moneylover
+.PHONY: test
+test:
+	poetry run pytest --cov=moneyloverc --cov-report=html

@@ -1,0 +1,16 @@
+[project]
+name = "moneyloverc"
+version = "0.1.0"
+description = ""
+authors = [{ name = "Chaiwat S", email = "iwatth@gmail.com" }]
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["requests (>=2.25.0,<3.0.0)"]
+
+[project.scripts]
+moneyloverc = "moneyloverc.__main__:main"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
