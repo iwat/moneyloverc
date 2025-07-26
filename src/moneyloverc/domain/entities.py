@@ -1,9 +1,34 @@
 from dataclasses import dataclass
 from datetime import datetime
+import json
 from typing import Any, Self
 
 from moneyloverc.domain.enums import CategoryType
 
+
+@dataclass
+class Address:
+    '''Information about the merchant's address.'''
+    name: str
+    icon: str | None
+    details: str | None
+    others: dict[str, Any]
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> Self:
+        return cls(
+            name=data.get('name', ''),
+            icon=data.get('icon', ''),
+            details=data.get('details', ''),
+            others={
+                k: v
+                for k, v in data.items()
+                if k not in ['name', 'icon', 'details']
+            }
+        )
+
+    def __str__(self):
+        return f'Address[{self.name} {self.icon} {self.details}]'
 
 @dataclass
 class UserInfo:
@@ -46,6 +71,7 @@ class Wallet:
     exclude_total: bool
     icon: str
     list_user: list[dict[str, str]]
+    created_at: datetime
     update_at: datetime
     is_delete: bool
     balance: list[dict[str, str]]
@@ -53,6 +79,12 @@ class Wallet:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Self:
+        created_at = data.get('createdAt')
+        if isinstance(created_at, str):
+            created_at = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+        elif created_at is None:
+            created_at = datetime.now()
+
         update_at = data.get('updateAt')
         if isinstance(update_at, str):
             update_at = datetime.fromisoformat(update_at.replace('Z', '+00:00'))
@@ -70,6 +102,7 @@ class Wallet:
             exclude_total=data.get('exclude_total', False),
             icon=data.get('icon', ''),
             list_user=data.get('listUser', []),
+            created_at=created_at,
             update_at=update_at,
             is_delete=data.get('isDelete', False),
             balance=data.get('balance', []),
@@ -79,7 +112,7 @@ class Wallet:
                 if k not in [
                     '_id', 'name', 'currency_id', 'owner', 'transaction_notification',
                     'archived', 'account_type', 'exclude_total', 'icon', 'listUser',
-                    'updateAt', 'isDelete', 'balance'
+                    'updateAt', 'isDelete', 'balance', 'createdAt'
                 ]
             }
         )
@@ -153,6 +186,8 @@ class Campaign:
 class Category:
     '''Information about transaction category.'''
     id: str
+    parent: str | None  # parent._id, ignored icon, metadata, name, type
+    account: str
     icon: str
     metadata: str
     name: str
@@ -161,8 +196,17 @@ class Category:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Self:
+        if 'parent' in data:
+            if type(data['parent']) == str:
+                parent = data['parent']
+            else:
+                parent = data['parent']['_id']
+        else:
+            parent = None
         return cls(
             id=data.get('_id', ''),
+            parent=parent,
+            account=data.get('account', ''),
             icon=data.get('icon', ''),
             metadata=data.get('metadata', ''),
             name=data.get('name', ''),
@@ -171,7 +215,7 @@ class Category:
                 k: v
                 for k, v in data.items()
                 if k not in [
-                    '_id', 'icon', 'metadata', 'name', 'type'
+                    '_id', 'icon', 'metadata', 'name', 'type', 'account', 'parent'
                 ]
             }
         )
@@ -189,10 +233,11 @@ class Transaction:
     category: Category | None
     amount: float
     date: datetime
-    images: list[str]
+    images: list[str]  # list of image file name, prefix with https://bucket.moneylover.com/
     exclude_report: bool
     campaigns: list[Campaign]
     with_: list[str]
+    address: Address | None
     others: dict[str, Any]
 
     @classmethod
@@ -214,6 +259,13 @@ class Transaction:
         if data.get('campaign'):
             campaigns = [Campaign.from_dict(c) for c in data['campaign']]
 
+        address = None
+        if data.get('address'):
+            try:
+                address = Address.from_dict(json.loads(data['address']))
+            except json.decoder.JSONDecodeError:
+                address = Address(data['address'], None, None, {})
+
         return cls(
             id=data.get('_id', ''),
             note=data.get('note', ''),
@@ -225,13 +277,14 @@ class Transaction:
             exclude_report=data.get('exclude_report', False),
             campaigns=campaigns,
             with_=data.get('with', []),
+            address=address,
             others={
                 k: v
                 for k, v in data.items()
                 if k not in [
                     '_id', 'note', 'account', 'category', 'amount',
                     'displayDate', 'images', 'exclude_report',
-                    'campaign', 'with'
+                    'campaign', 'with', 'address',
                 ]
             }
         )

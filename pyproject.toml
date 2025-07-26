@@ -6,7 +6,7 @@ authors = [{ name = "Chaiwat S", email = "iwatth@gmail.com" }]
 license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["requests (>=2.25.0,<3.0.0)"]
+dependencies = ["requests (>=2.25.0,<3.0.0)", "exif (>=1.6.1,<2.0.0)"]
 
 [project.scripts]
 moneyloverc = "moneyloverc.__main__:main"

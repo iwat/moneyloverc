@@ -1,13 +1,50 @@
 import getpass
 import logging
+import sqlite3
 from datetime import datetime, timedelta
-from pprint import pprint
+from zoneinfo import ZoneInfo
 
+from moneyloverc.domain.entities import Category, Wallet
+from moneyloverc.domain.repositories import CategoryRepository, WalletRepository
 from moneyloverc.domain.services import MoneyLoverClient
 from configparser import ConfigParser
 
 
 CONFIG_FILE = 'config.ini'
+
+
+def dump_category(cat_repo: CategoryRepository,
+                  category: Category):
+    cat_repo.save(category)
+    print(f'  - {category}')
+
+def dump_wallet(client: MoneyLoverClient,
+                wallet_repo: WalletRepository,
+                cat_repo: CategoryRepository,
+                wallet: Wallet):
+    wallet_repo.save(wallet)
+
+    print(f'## {wallet}')
+
+    wallet_id = wallet.id
+
+    categories = client.get_categories(wallet_id)
+    if not categories:
+        print('No categories found')
+        return
+
+    print(f'Found {len(categories)} categories in wallet {wallet.name}:')
+    for category in categories[:5]:
+        dump_category(cat_repo, category)
+
+    end_date = datetime.now(ZoneInfo('UTC'))
+    start_date = wallet.created_at
+    current_date = start_date
+    while current_date <= end_date:
+        transactions = client.get_transactions(wallet_id, current_date, current_date + timedelta(days=30))
+        for transaction in transactions:
+            print(f'  - {transaction}')
+        current_date += timedelta(days=30)
 
 def main():
     logging.basicConfig(level=logging.INFO)
@@ -44,65 +81,17 @@ def main():
             cfg.write(f)
 
     user_info = client.get_user_info()
-    print(f'User info: {user_info}')
+    print(f'# User info: {user_info}')
 
     wallets = client.get_wallets()
-    print(f'Found {len(wallets)} wallets:')
-    for wallet in wallets:
-        print(f'  - {wallet}')
-
     if not wallets:
         print('No wallets found')
         return
 
-    wallet = wallets[0]
-    wallet_id = wallet.id
+    conn = sqlite3.connect('moneylover.db')
+    wallet_repo = WalletRepository(conn)
+    cat_repo = CategoryRepository(conn)
 
-    categories = client.get_categories(wallet_id)
-    print(f'Found {len(categories)} categories in wallet {wallet.name}:')
-    for category in categories[:5]:
-        print(f'  - {category}')
-
-    if len(categories) > 5:
-        print(f'  ... and {len(categories) - 5} more')
-
-    if not categories:
-        print('No categories found')
-        return
-
-    category = categories[0]
-
-    end_date = datetime.now()
-    start_date = end_date - timedelta(days=30)
-
-    transactions = client.get_transactions(wallet_id, start_date, end_date)
-    print(f'Found {len(transactions)} transactions in the last 30 days:')
-    for transaction in transactions[:5]:
-        print(f'  - {transaction}')
-        pprint(vars(transaction))
-
-    if len(transactions) > 5:
-        print(f'  ... and {len(transactions) - 5} more')
-
-    #try:
-    #    # Create a sample transaction
-    #    new_transaction = TransactionInput(
-    #        note='Test transaction from Python client',
-    #        account=wallet_id,
-    #        category=category.id,
-    #        amount=10.50,
-    #        date=datetime.now()
-    #    )
-    #
-    #    print(f'Adding transaction: {new_transaction}')
-    #
-    #    # Uncomment the following line to actually add the transaction
-    #    # result = client.add_transaction(new_transaction)
-    #    # print(f'Transaction added: {result}')
-    #
-    #    print('(Transaction creation is commented out to avoid test data)')
-    #
-    #except Exception as e:
-    #    print(f'Add transaction failed: {e}')
-    #
-    #print('\n=== Example completed ===')
+    print(f'Found {len(wallets)} wallets:')
+    for wallet in wallets:
+        dump_wallet(client, wallet_repo, cat_repo, wallet)

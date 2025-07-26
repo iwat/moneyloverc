@@ -115,6 +115,21 @@ files = [
 ]
 
 [[package]]
+name = "exif"
+version = "1.6.1"
+description = "Read and modify image EXIF metadata using Python."
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "exif-1.6.1-py3-none-any.whl", hash = "sha256:2879830e2d8f0e5f1503110736bceb83a1e9c2121b32c23208c04284be5afbec"},
+    {file = "exif-1.6.1.tar.gz", hash = "sha256:763599b89b9b67495713060a703f32d1874abf8f0628c9d77711c2c06a5f44c8"},
+]
+
+[package.dependencies]
+plum-py = ">=0.5.0,<2.0.0"
+
+[[package]]
 name = "idna"
 version = "3.10"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -128,6 +143,18 @@ files = [
 
 [package.extras]
 all = ["flake8 (>=7.1.1)", "mypy (>=1.11.2)", "pytest (>=8.3.2)", "ruff (>=0.6.2)"]
+
+[[package]]
+name = "plum-py"
+version = "0.8.7"
+description = "Pack/Unpack Memory."
+optional = false
+python-versions = ">=3.6"
+groups = ["main"]
+files = [
+    {file = "plum-py-0.8.7.tar.gz", hash = "sha256:40a25a70f7fd213f57cdd1decc65874df2d213d19d63478a1addcca748c13c4e"},
+    {file = "plum_py-0.8.7-py3-none-any.whl", hash = "sha256:d791f059ef159adbe3c3b036557b5b431fa07db226a9de106a74e5e57441741d"},
+]
 
 [[package]]
 name = "requests"
@@ -172,4 +199,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11"
-content-hash = "5f0b13d3340cfb883c12220b1f2dc93faf9846c5c2e645d828742c5f311e7d59"
+content-hash = "8a73a719ff327719758812d646aaac4432fb5861260c31eadaa535653e11ed42"
